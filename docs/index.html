@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cartera · Nicolás</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:       #080c10;
+  --bg2:      #0e1419;
+  --bg3:      #141c24;
+  --bg4:      #1a2430;
+  --gold:     #c9a84c;
+  --gold2:    #e8c97a;
+  --gold3:    #f5dfa0;
+  --text:     #e2ddd4;
+  --muted:    #7a7060;
+  --muted2:   #9a8e7a;
+  --green:    #4caf7a;
+  --red:      #c95050;
+  --blue:     #5090c9;
+  --orange:   #c98050;
+  --purple:   #9070c9;
+  --teal:     #50b0a0;
+  --border:   rgba(201,168,76,0.12);
+  --border2:  rgba(201,168,76,0.22);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'DM Mono',monospace;
+  font-weight:300;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* noise overlay */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity:.4;
+}
+
+/* glow */
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 70% 40% at 10% 5%, rgba(201,168,76,0.06) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 30% at 90% 90%, rgba(80,144,201,0.04) 0%,transparent 60%);
+}
+
+.wrap{position:relative;z-index:1;max-width:1480px;margin:0 auto;padding:40px 28px 80px;}
+
+/* ── HEADER ── */
+header{
+  display:flex;align-items:flex-end;justify-content:space-between;
+  border-bottom:1px solid var(--border);padding-bottom:28px;margin-bottom:48px;
+  flex-wrap:wrap;gap:20px;
+}
+.h-left .eyebrow{font-size:9px;letter-spacing:5px;text-transform:uppercase;color:var(--gold);margin-bottom:10px;}
+.h-left h1{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(2.2rem,5vw,3.6rem);
+  font-weight:300;line-height:1.05;letter-spacing:-0.02em;
+}
+.h-left h1 em{font-style:italic;color:var(--gold2);}
+.h-right{text-align:right;}
+.h-right .period{font-size:9px;letter-spacing:3px;color:var(--muted);margin-bottom:6px;}
+.h-right .total-val{
+  font-family:'Cormorant Garamond',serif;
+  font-size:2.4rem;font-weight:300;color:var(--gold);line-height:1;
+}
+.h-right .total-label{font-size:9px;letter-spacing:2px;color:var(--muted);margin-top:4px;}
+
+/* ── NAV TABS ── */
+.tabs{display:flex;gap:2px;margin-bottom:40px;border-bottom:1px solid var(--border);padding-bottom:0;}
+.tab{
+  background:transparent;border:none;
+  font-family:'DM Mono',monospace;font-size:10px;font-weight:400;
+  letter-spacing:3px;text-transform:uppercase;color:var(--muted);
+  padding:12px 24px;cursor:pointer;
+  border-bottom:2px solid transparent;margin-bottom:-1px;
+  transition:all .2s;
+}
+.tab:hover{color:var(--text);}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+
+/* ── SECTION LABEL ── */
+.slabel{
+  font-size:9px;letter-spacing:4px;text-transform:uppercase;
+  color:var(--muted);margin-bottom:18px;
+  display:flex;align-items:center;gap:12px;
+}
+.slabel::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* ── KPI STRIP ── */
+.kpi-strip{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:1px;background:var(--border);
+  border:1px solid var(--border);border-radius:3px;
+  overflow:hidden;margin-bottom:40px;
+}
+.kpi{
+  background:var(--bg2);padding:20px 18px;
+  transition:background .2s;
+}
+.kpi:hover{background:var(--bg3);}
+.kpi-label{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.kpi-val{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.7rem;font-weight:300;line-height:1;
+}
+.kpi-sub{font-size:10px;color:var(--muted2);margin-top:5px;}
+.pos{color:var(--green);}
+.neg{color:var(--red);}
+.neu{color:var(--gold2);}
+.blue{color:var(--blue);}
+
+/* ── GRID LAYOUTS ── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:32px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:32px;}
+@media(max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr;}}
+
+/* ── CHART CARD ── */
+.chart-card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:3px;padding:24px;
+}
+.chart-card.full{margin-bottom:32px;}
+.chart-title{
+  font-size:9px;letter-spacing:3px;text-transform:uppercase;
+  color:var(--gold);margin-bottom:18px;
+}
+.chart-wrap{position:relative;}
+
+/* ── ASSET PILLS ── */
+.asset-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:12px;margin-bottom:40px;
+}
+.asset-card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:3px;padding:18px;cursor:pointer;
+  transition:all .2s;position:relative;overflow:hidden;
+}
+.asset-card::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--accent,var(--gold));
+}
+.asset-card:hover{border-color:var(--border2);background:var(--bg3);}
+.asset-card .ac-name{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.asset-card .ac-val{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.5rem;font-weight:300;margin-bottom:6px;
+}
+.asset-card .ac-rent{font-size:10px;margin-bottom:8px;}
+.asset-card .ac-bar-wrap{height:3px;background:rgba(255,255,255,0.06);border-radius:2px;}
+.asset-card .ac-bar{height:100%;border-radius:2px;background:var(--accent,var(--gold));}
+
+/* ── PESOS / REBALANCEO ── */
+.pesos-table{width:100%;border-collapse:collapse;}
+.pesos-table th{
+  font-size:8px;letter-spacing:2px;text-transform:uppercase;
+  color:var(--muted);text-align:right;padding:10px 12px;
+  border-bottom:1px solid var(--border);
+}
+.pesos-table th:first-child{text-align:left;}
+.pesos-table td{
+  padding:12px 12px;text-align:right;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+  font-size:12px;
+}
+.pesos-table td:first-child{text-align:left;color:var(--muted2);}
+.pesos-table tr:hover td{background:rgba(201,168,76,0.03);}
+.dev-bar-wrap{
+  display:inline-flex;align-items:center;gap:6px;
+  width:140px;
+}
+.dev-bar-track{
+  flex:1;height:4px;background:rgba(255,255,255,0.06);
+  border-radius:2px;position:relative;overflow:visible;
+}
+.dev-bar-center{
+  position:absolute;left:50%;top:-1px;
+  width:1px;height:6px;background:var(--muted);
+}
+.dev-bar-fill{
+  position:absolute;height:100%;border-radius:2px;top:0;
+}
+
+/* ── BENCHMARK TABLE ── */
+.bench-table{width:100%;border-collapse:collapse;}
+.bench-table th{
+  font-size:8px;letter-spacing:2px;text-transform:uppercase;
+  color:var(--muted);text-align:right;padding:10px 14px;
+  border-bottom:1px solid var(--border);
+}
+.bench-table th:first-child{text-align:left;}
+.bench-table td{
+  padding:13px 14px;text-align:right;font-size:12px;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+  font-family:'DM Mono',monospace;
+}
+.bench-table td:first-child{
+  text-align:left;
+  font-family:'Cormorant Garamond',serif;
+  font-size:1rem;color:var(--muted2);
+}
+.bench-table tr.pending td{color:var(--muted);}
+.badge{
+  font-size:8px;letter-spacing:1px;padding:2px 6px;border-radius:2px;
+  display:inline-block;vertical-align:middle;margin-left:4px;
+}
+.badge-pos{background:rgba(76,175,122,0.15);color:var(--green);}
+.badge-neg{background:rgba(201,80,80,0.15);color:var(--red);}
+.badge-pend{background:rgba(122,112,96,0.15);color:var(--muted);}
+
+/* ── INPUT DATA PANEL ── */
+.input-panel{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:3px;padding:28px;margin-bottom:32px;
+}
+.input-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:16px;margin-top:18px;
+}
+.input-group label{
+  display:block;font-size:8px;letter-spacing:2px;
+  text-transform:uppercase;color:var(--muted);margin-bottom:6px;
+}
+.input-group input{
+  width:100%;background:var(--bg3);border:1px solid var(--border);
+  border-radius:2px;color:var(--gold2);
+  font-family:'DM Mono',monospace;font-size:13px;
+  padding:9px 12px;outline:none;transition:border-color .2s;
+}
+.input-group input:focus{border-color:var(--gold);}
+.btn-calcular{
+  background:var(--gold);border:none;color:var(--bg);
+  font-family:'DM Mono',monospace;font-size:10px;font-weight:500;
+  letter-spacing:3px;text-transform:uppercase;
+  padding:12px 32px;border-radius:2px;cursor:pointer;
+  margin-top:20px;transition:all .2s;
+}
+.btn-calcular:hover{background:var(--gold2);}
+.result-box{
+  margin-top:20px;padding:16px;background:var(--bg3);
+  border:1px solid var(--border);border-radius:2px;display:none;
+}
+.result-box.visible{display:block;}
+
+/* ── PAGE VISIBILITY ── */
+.page{display:none;}
+.page.active{display:block;}
+
+/* ── DONUT LEGEND ── */
+.donut-legend{
+  display:flex;flex-wrap:wrap;gap:10px 20px;
+  margin-top:14px;
+}
+.dl-item{display:flex;align-items:center;gap:7px;font-size:10px;color:var(--muted2);}
+.dl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+footer{
+  margin-top:60px;padding-top:20px;
+  border-top:1px solid var(--border);
+  font-size:9px;letter-spacing:2px;text-transform:uppercase;
+  color:var(--muted);text-align:right;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- HEADER -->
+<header>
+  <div class="h-left">
+    <div class="eyebrow">Seguimiento Patrimonial · 2026</div>
+    <h1>Cartera de<br><em>Inversión</em></h1>
+  </div>
+  <div class="h-right">
+    <div class="period">ÚLTIMO MES CERRADO</div>
+    <div class="total-val" id="hdr-total">17.939 €</div>
+    <div class="total-label">CARTERA CORE · MAY-2026</div>
+  </div>
+</header>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab active" onclick="goTo('overview',this)">Visión General</button>
+  <button class="tab" onclick="goTo('activos',this)">Activos</button>
+  <button class="tab" onclick="goTo('pesos',this)">Pesos & Rebalanceo</button>
+  <button class="tab" onclick="goTo('benchmark',this)">Benchmark</button>
+  <button class="tab" onclick="goTo('cierre',this)">Cerrar Mes</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE 1 · VISIÓN GENERAL
+════════════════════════════════════════════════ -->
+<div class="page active" id="page-overview">
+
+  <!-- KPIs -->
+  <div class="slabel">Resumen del período</div>
+  <div class="kpi-strip">
+    <div class="kpi">
+      <div class="kpi-label">Valor total</div>
+      <div class="kpi-val neu">17.939 €</div>
+      <div class="kpi-sub">Mayo 2026</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Rent. acumulada</div>
+      <div class="kpi-val pos">+6,47%</div>
+      <div class="kpi-sub">Feb → May · Modified Dietz</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Rent. mayo</div>
+      <div class="kpi-val pos">+3,87%</div>
+      <div class="kpi-sub">Mejor mes del período</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Beneficio neto</div>
+      <div class="kpi-val pos">+1.134 €</div>
+      <div class="kpi-sub">Desde feb 2026</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Alpha acum. vs S&P</div>
+      <div class="kpi-val neg">−1,99%</div>
+      <div class="kpi-sub">Índice: +8,46% acum.</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Aportaciones totales</div>
+      <div class="kpi-val blue">+6.564 €</div>
+      <div class="kpi-sub">Feb → May</div>
+    </div>
+  </div>
+
+  <!-- GRÁFICO EVOLUCIÓN TOTAL -->
+  <div class="slabel">Evolución del valor total</div>
+  <div class="chart-card full">
+    <div class="chart-title">Valor cartera · Feb–Jun 2026</div>
+    <div class="chart-wrap"><canvas id="chartTotal" height="70"></canvas></div>
+  </div>
+
+  <!-- GRÁFICO RENTABILIDADES MENSUALES -->
+  <div class="grid-2">
+    <div class="chart-card">
+      <div class="chart-title">Rentabilidad mensual vs S&P 500 EUR</div>
+      <div class="chart-wrap"><canvas id="chartRent" height="140"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Rentabilidad acumulada vs S&P 500 EUR</div>
+      <div class="chart-wrap"><canvas id="chartAcum" height="140"></canvas></div>
+    </div>
+  </div>
+
+  <!-- DONUT COMPOSICIÓN -->
+  <div class="slabel">Composición actual (Mayo 2026)</div>
+  <div class="grid-2">
+    <div class="chart-card">
+      <div class="chart-title">Distribución por activo</div>
+      <div class="chart-wrap" style="max-width:320px;margin:0 auto;">
+        <canvas id="chartDonut" height="220"></canvas>
+      </div>
+      <div class="donut-legend" id="donutLegend"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Evolución de composición</div>
+      <div class="chart-wrap"><canvas id="chartStack" height="220"></canvas></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE 2 · ACTIVOS
+════════════════════════════════════════════════ -->
+<div class="page" id="page-activos">
+
+  <div class="slabel">Estado actual · Mayo 2026</div>
+  <div class="asset-grid" id="assetGrid"></div>
+
+  <div class="slabel">Evolución por activo</div>
+  <div class="grid-2" id="assetCharts"></div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE 3 · PESOS & REBALANCEO
+════════════════════════════════════════════════ -->
+<div class="page" id="page-pesos">
+
+  <div class="slabel">Pesos sobre cartera total (Core + Fondos) · Mayo 2026</div>
+  <div class="chart-card full">
+    <div class="chart-title">Objetivo vs Actual</div>
+    <div class="chart-wrap"><canvas id="chartPesos" height="100"></canvas></div>
+  </div>
+
+  <div class="slabel">Tabla de desviaciones</div>
+  <div class="chart-card full" style="overflow-x:auto;">
+    <table class="pesos-table">
+      <thead>
+        <tr>
+          <th>ACTIVO</th>
+          <th>OBJETIVO</th>
+          <th>ACTUAL</th>
+          <th>DESVIACIÓN</th>
+          <th>DIRECCIÓN DCA</th>
+          <th>VALOR ACTUAL</th>
+          <th>AJUSTE</th>
+        </tr>
+      </thead>
+      <tbody id="pesosBody"></tbody>
+    </table>
+  </div>
+
+  <div class="slabel">Nota estratégica</div>
+  <div class="input-panel" style="padding:20px;">
+    <div style="font-size:11px;color:var(--muted2);line-height:1.9;">
+      La tabla de referencia para rebalanceo es la de <span style="color:var(--gold)">cartera total</span> (no solo core). 
+      Numantia y Horos exponen ~10–15% adicional a S&P 500 implícitamente, por lo que la exposición real al mercado 
+      americano ronda el <span style="color:var(--gold2)">49–51%</span>. 
+      El crowdfunding (~5.570 €) no aparece en esta calculadora — se gestiona desde el tracker separado. 
+      El rebalanceo se hace mediante <span style="color:var(--gold)">sesgo del DCA</span>, no vendiendo posiciones.
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE 4 · BENCHMARK
+════════════════════════════════════════════════ -->
+<div class="page" id="page-benchmark">
+
+  <div class="slabel">Comparativa vs S&P 500 EUR · Modified Dietz</div>
+  <div class="chart-card full">
+    <div class="chart-title">Alpha mensual acumulado</div>
+    <div class="chart-wrap"><canvas id="chartAlpha" height="80"></canvas></div>
+  </div>
+
+  <div class="slabel">Detalle mensual</div>
+  <div class="chart-card full" style="overflow-x:auto;">
+    <table class="bench-table">
+      <thead>
+        <tr>
+          <th>PERÍODO</th>
+          <th>RENT. CARTERA</th>
+          <th>S&P 500 EUR</th>
+          <th>ALPHA MENSUAL</th>
+          <th>RENT. ACUM. CARTERA</th>
+          <th>ACUM. S&P 500</th>
+          <th>ALPHA ACUM.</th>
+        </tr>
+      </thead>
+      <tbody id="benchBody"></tbody>
+    </table>
+  </div>
+
+  <div class="slabel">Instrucciones benchmark</div>
+  <div class="input-panel" style="padding:20px;">
+    <div style="font-size:11px;color:var(--muted2);line-height:1.9;">
+      Fuente S&P 500 EUR: <span style="color:var(--gold)">justETF → iShares Core S&P 500 (SXR8) → Rentabilidad → Rendimientos mensuales</span>.
+      Usar siempre rentabilidad en EUR, no USD. Al cerrar cada mes, actualiza la columna del benchmark 
+      en tu Sheet y añade los datos en la pestaña <span style="color:var(--gold)">"Cerrar Mes"</span> de esta app.
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE 5 · CERRAR MES
+════════════════════════════════════════════════ -->
+<div class="page" id="page-cierre">
+
+  <div class="slabel">Cierre de junio 2026</div>
+  <div class="input-panel">
+    <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:4px;">Valores finales del mes</div>
+    <div style="font-size:11px;color:var(--muted2);margin-bottom:18px;">
+      Introduce el valor final de cada activo al cierre del mes (desde MyInvestor / TR). 
+      La rentabilidad se calcula automáticamente por Modified Dietz.
+    </div>
+
+    <div class="input-grid">
+      <div class="input-group">
+        <label>Mes que cierras</label>
+        <input type="text" id="in-mes" value="Jun-2026" placeholder="Jun-2026">
+      </div>
+      <div class="input-group">
+        <label>S&P 500 (€)</label>
+        <input type="number" id="in-sp500" placeholder="8.440,28" step="0.01">
+      </div>
+      <div class="input-group">
+        <label>Eurostoxx 600 (€)</label>
+        <input type="number" id="in-euro" placeholder="1.680,00" step="0.01">
+      </div>
+      <div class="input-group">
+        <label>Emergentes (€)</label>
+        <input type="number" id="in-em" placeholder="2.493,51" step="0.01">
+      </div>
+      <div class="input-group">
+        <label>Oro (€)</label>
+        <input type="number" id="in-oro" placeholder="1.019,85" step="0.01">
+      </div>
+      <div class="input-group">
+        <label>Bitcoin (€)</label>
+        <input type="number" id="in-btc" placeholder="873,79" step="0.01">
+      </div>
+      <div class="input-group">
+        <label>Numantia (€)</label>
+        <input type="number" id="in-num" placeholder="1.856,43" step="0.01">
+      </div>
+      <div class="input-group">
+        <label>Horos (€)</label>
+        <input type="number" id="in-hor" placeholder="1.575,44" step="0.01">
+      </div>
+      <div class="input-group">
+        <label>Rent. S&P 500 EUR (%)</label>
+        <input type="number" id="in-bench" placeholder="ej. 3.20" step="0.01">
+      </div>
+    </div>
+
+    <button class="btn-calcular" onclick="calcularCierre()">Calcular cierre →</button>
+
+    <div class="result-box" id="resultBox"></div>
+  </div>
+
+  <div class="slabel">Instrucciones de actualización</div>
+  <div class="input-panel" style="padding:20px;">
+    <div style="font-size:11px;color:var(--muted2);line-height:2;">
+      1. Al día <span style="color:var(--gold)">1 del mes siguiente</span> — introduce los valores finales arriba y copia los resultados en tu Google Sheet.<br>
+      2. Actualiza <span style="color:var(--gold)">DATA.activos</span> en el código fuente de esta app con los nuevos valores finales (busca la sección <code style="color:var(--gold2)">// ── DATOS ──</code>).<br>
+      3. Para una solución completamente automatizada (Claude Code): el pipeline puede leer tu Sheet y regenerar esta app — dímelo cuando quieras construirlo.
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>Seguimiento · 2026 · Solo orientativo · Datos privados</footer>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+// ── DATOS ─────────────────────────────────────────────────
+// Para actualizar cada mes: añadir una entrada en cada array
+// con el valor final del mes cerrado.
+// ══════════════════════════════════════════════════════════
+
+const MESES = ['Feb-26','Mar-26','Abr-26','May-26'];
+const MESES_FULL = ['Feb-2026','Mar-2026','Abr-2026','May-2026'];
+
+// Valor final de cada activo al cierre del mes
+const DATA = {
+  sp500:    [3909.15, 4817.63, 7745.55, 8440.28],
+  euro:     [3134.21, 3040.36, 1565.39, 1680.00],
+  em:       [967.85,  915.87,  2167.62, 2493.51],
+  oro:      [1013.34, 959.98,  983.67,  1019.85],
+  btc:      [740.71,  784.83,  922.22,  873.79],
+  numantia: [1786.31, 1705.57, 1801.27, 1856.43],
+  horos:    [0,       1446.98, 1548.65, 1575.44],
+};
+
+// Total cartera (suma de todos los activos)
+const TOTAL = MESES.map((_,i) =>
+  DATA.sp500[i]+DATA.euro[i]+DATA.em[i]+DATA.oro[i]+DATA.btc[i]+DATA.numantia[i]+DATA.horos[i]
+);
+
+// Rentabilidades mensuales (Modified Dietz, calculadas en Sheet)
+const RENT_CARTERA = [0.36, -4.33, 6.75, 3.87];
+const RENT_SP500   = [-0.92, -5.04, 9.63, 5.15];
+
+// Acumuladas
+const RENT_ACUM_CARTERA = [0.36, -3.98, 2.51, 6.47];
+const RENT_ACUM_SP500   = [-0.92, -5.91, 3.15, 8.46];
+
+// Aportaciones totales por mes
+const APORTACIONES = [271, 2677.5, 2069.93, 547.15];
+
+// Config activos
+const ACTIVOS = [
+  { key:'sp500',    nombre:'S&P 500',          color:'#5090c9', acento:'--blue'   },
+  { key:'euro',     nombre:'Eurostoxx 600',     color:'#50b0a0', acento:'--teal'   },
+  { key:'em',       nombre:'Emergentes',        color:'#9070c9', acento:'--purple' },
+  { key:'oro',      nombre:'Oro',               color:'#c9a84c', acento:'--gold'   },
+  { key:'btc',      nombre:'Bitcoin',           color:'#c98050', acento:'--orange' },
+  { key:'numantia', nombre:'Numantia',          color:'#4caf7a', acento:'--green'  },
+  { key:'horos',    nombre:'Horos',             color:'#c95050', acento:'--red'    },
+];
+
+// Pesos objetivo y actuales (cartera total sin crowdfunding)
+const PESOS = [
+  { nombre:'S&P 500',      obj:44.00, act:35.90, val:8440.28 },
+  { nombre:'Eurostoxx 600',obj: 8.00, act: 7.15, val:1680.00 },
+  { nombre:'Emergentes',   obj:16.00, act:10.61, val:2493.51 },
+  { nombre:'Oro',          obj: 6.00, act: 4.34, val:1019.85 },
+  { nombre:'Bitcoin',      obj: 4.00, act: 3.72, val: 873.79 },
+  { nombre:'Numantia',     obj: 8.50, act: 7.90, val:1856.43 },
+  { nombre:'Horos',        obj: 8.50, act: 6.70, val:1575.44 },
+];
+
+const TOTAL_CARTERA = 23509.30; // Con crowdfunding incluido en denominador
+
+// Benchmark data
+const BENCH_DATA = [
+  { mes:'Feb-2026', rc:0.36,  rs:-0.92, am: 1.28, rac:0.36,  ras:-0.92, aa: 1.28, ok:true },
+  { mes:'Mar-2026', rc:-4.33, rs:-5.04, am: 0.71, rac:-3.98, ras:-5.91, aa: 1.93, ok:true },
+  { mes:'Abr-2026', rc:6.75,  rs: 9.63, am:-2.88, rac:2.51,  ras: 3.15, aa:-0.64, ok:true },
+  { mes:'May-2026', rc:3.87,  rs: 5.15, am:-1.28, rac:6.47,  ras: 8.46, aa:-1.99, ok:true },
+  { mes:'Jun-2026', ok:false },
+  { mes:'Jul-2026', ok:false },
+];
+
+// ══════════════════════════════════════════════════════════
+// ── NAVEGACIÓN ────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+function goTo(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ══════════════════════════════════════════════════════════
+// ── UTILS ─────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+const fmtEur = n => new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(n);
+const fmtPct = (n, decimals=2) => (n >= 0 ? '+' : '') + n.toFixed(decimals).replace('.',',') + '%';
+const clr = (n, pos='#4caf7a', neg='#c95050', neu='#c9a84c') => n > 0.05 ? pos : n < -0.05 ? neg : neu;
+
+const CHART_DEFAULTS = {
+  plugins:{ legend:{ labels:{ color:'#7a7060', font:{ family:'DM Mono', size:10 }, boxWidth:14 } } },
+  scales:{
+    x:{ grid:{ color:'rgba(255,255,255,0.04)' }, ticks:{ color:'#7a7060', font:{ family:'DM Mono', size:10 } } },
+    y:{ grid:{ color:'rgba(255,255,255,0.04)' }, ticks:{ color:'#7a7060', font:{ family:'DM Mono', size:10 } } }
+  }
+};
+
+// ══════════════════════════════════════════════════════════
+// ── GRÁFICO TOTAL ─────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+function buildChartTotal() {
+  // Añadimos junio como punto pendiente (solo inicio conocido)
+  const labels = [...MESES, 'Jun-26'];
+  const valores = [...TOTAL, null];
+  const apUnstack = [...APORTACIONES.map((_,i) =>
+    APORTACIONES.slice(0,i+1).reduce((a,b)=>a+b, 11239.21)), null];
+
+  new Chart(document.getElementById('chartTotal'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Valor total cartera',
+          data: valores,
+          borderColor: '#c9a84c',
+          backgroundColor: 'rgba(201,168,76,0.08)',
+          fill: true, tension: 0.4, borderWidth: 2,
+          pointRadius: 5, pointBackgroundColor: '#c9a84c',
+          pointHoverRadius: 7,
+        },
+        {
+          label: 'Capital aportado (acumulado)',
+          data: [...APORTACIONES.reduce((acc,a,i) => {
+            acc.push((acc[i-1]||11239.21)+a); return acc;
+          },[]), null],
+          borderColor: '#7a7060',
+          backgroundColor: 'transparent',
+          fill: false, tension: 0.4, borderWidth: 1,
+          borderDash: [4,4], pointRadius: 3,
+          pointBackgroundColor: '#7a7060',
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      interaction: { mode:'index', intersect:false },
+      plugins: {
+        legend: { labels:{ color:'#7a7060', font:{family:'DM Mono',size:10}, boxWidth:14 } },
+        tooltip: {
+          backgroundColor:'#0e1419', borderColor:'rgba(201,168,76,0.3)', borderWidth:1,
+          titleColor:'#c9a84c', bodyColor:'#e2ddd4',
+          callbacks: { label: ctx => ` ${ctx.dataset.label}: ${fmtEur(ctx.parsed.y)}` }
+        }
+      },
+      scales: {
+        x: { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#7a7060',font:{family:'DM Mono',size:10}} },
+        y: { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#7a7060',font:{family:'DM Mono',size:10}, callback: v => fmtEur(v)} }
+      }
+    }
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+// ── GRÁFICOS RENTABILIDAD ─────────────────────────────────
+// ══════════════════════════════════════════════════════════
+function buildChartRent() {
+  new Chart(document.getElementById('chartRent'), {
+    type: 'bar',
+    data: {
+      labels: MESES,
+      datasets: [
+        {
+          label: 'Mi cartera',
+          data: RENT_CARTERA,
+          backgroundColor: RENT_CARTERA.map(v => v >= 0 ? 'rgba(76,175,122,0.7)' : 'rgba(201,80,80,0.7)'),
+          borderRadius: 2,
+        },
+        {
+          label: 'S&P 500 EUR',
+          data: RENT_SP500,
+          backgroundColor: 'rgba(122,112,96,0.4)',
+          borderRadius: 2,
+        }
+      ]
+    },
+    options: {
+      responsive:true,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{labels:{color:'#7a7060',font:{family:'DM Mono',size:10},boxWidth:12}},
+        tooltip:{
+          backgroundColor:'#0e1419',borderColor:'rgba(201,168,76,0.3)',borderWidth:1,
+          titleColor:'#c9a84c',bodyColor:'#e2ddd4',
+          callbacks:{label:ctx=>` ${ctx.dataset.label}: ${fmtPct(ctx.parsed.y)}`}
+        }
+      },
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#7a7060',font:{family:'DM Mono',size:10}}},
+        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#7a7060',font:{family:'DM Mono',size:10},callback:v=>fmtPct(v,1)}}
+      }
+    }
+  });
+}
+
+function buildChartAcum() {
+  new Chart(document.getElementById('chartAcum'), {
+    type: 'line',
+    data: {
+      labels: MESES,
+      datasets: [
+        {
+          label: 'Mi cartera acum.',
+          data: RENT_ACUM_CARTERA,
+          borderColor: '#c9a84c',
+          backgroundColor: 'rgba(201,168,76,0.07)',
+          fill: true, tension: 0.4, borderWidth: 2,
+          pointRadius: 4, pointBackgroundColor: '#c9a84c',
+        },
+        {
+          label: 'S&P 500 EUR acum.',
+          data: RENT_ACUM_SP500,
+          borderColor: '#7a7060',
+          backgroundColor: 'transparent',
+          fill: false, tension: 0.4, borderWidth: 1,
+          borderDash: [4,4], pointRadius: 3,
+        }
+      ]
+    },
+    options: {
+      responsive:true,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{labels:{color:'#7a7060',font:{family:'DM Mono',size:10},boxWidth:14}},
+        tooltip:{
+          backgroundColor:'#0e1419',borderColor:'rgba(201,168,76,0.3)',borderWidth:1,
+          titleColor:'#c9a84c',bodyColor:'#e2ddd4',
+          callbacks:{label:ctx=>` ${ctx.dataset.label}: ${fmtPct(ctx.parsed.y)}`}
+        }
+      },
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#7a7060',font:{family:'DM Mono',size:10}}},
+        y:{
+          grid:{color:'rgba(255,255,255,0.04)'},
+          ticks:{color:'#7a7060',font:{family:'DM Mono',size:10},callback:v=>fmtPct(v,1)},
+          afterDataLimits(scale){scale.min=Math.min(scale.min,-1);scale.max=Math.max(scale.max,1);}
+        }
+      }
+    }
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+// ── DONUT + STACK ─────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+function buildDonut() {
+  const lastIdx = MESES.length - 1;
+  const vals = ACTIVOS.map(a => DATA[a.key][lastIdx]);
+  const colors = ACTIVOS.map(a => a.color);
+
+  new Chart(document.getElementById('chartDonut'), {
+    type: 'doughnut',
+    data: {
+      labels: ACTIVOS.map(a => a.nombre),
+      datasets: [{ data: vals, backgroundColor: colors, borderWidth: 1, borderColor: '#080c10' }]
+    },
+    options: {
+      responsive:true,
+      cutout:'65%',
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'#0e1419',borderColor:'rgba(201,168,76,0.3)',borderWidth:1,
+          titleColor:'#c9a84c',bodyColor:'#e2ddd4',
+          callbacks:{label:ctx=>`${fmtEur(ctx.parsed)} (${(ctx.parsed/vals.reduce((a,b)=>a+b,0)*100).toFixed(1)}%)`}
+        }
+      }
+    }
+  });
+
+  // Legend
+  const leg = document.getElementById('donutLegend');
+  ACTIVOS.forEach((a,i) => {
+    const pct = (vals[i] / vals.reduce((s,v)=>s+v,0) * 100).toFixed(1);
+    leg.innerHTML += `<div class="dl-item"><div class="dl-dot" style="background:${a.color}"></div>${a.nombre} <span style="color:var(--gold);margin-left:4px">${pct}%</span></div>`;
+  });
+}
+
+function buildStack() {
+  const datasets = ACTIVOS.map(a => ({
+    label: a.nombre,
+    data: DATA[a.key],
+    backgroundColor: a.color + 'bb',
+    stack: 'total',
+    borderWidth: 0,
+  }));
+
+  new Chart(document.getElementById('chartStack'), {
+    type:'bar',
+    data:{ labels:MESES, datasets },
+    options:{
+      responsive:true,
+      scales:{
+        x:{stacked:true,grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#7a7060',font:{family:'DM Mono',size:10}}},
+        y:{stacked:true,grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#7a7060',font:{family:'DM Mono',size:10},callback:v=>fmtEur(v)}}
+      },
+      plugins:{
+        legend:{labels:{color:'#7a7060',font:{family:'DM Mono',size:9},boxWidth:10}},
+        tooltip:{
+          backgroundColor:'#0e1419',borderColor:'rgba(201,168,76,0.3)',borderWidth:1,
+          titleColor:'#c9a84c',bodyColor:'#e2ddd4',
+          callbacks:{label:ctx=>` ${ctx.dataset.label}: ${fmtEur(ctx.parsed.y)}`}
+        }
+      }
+    }
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+// ── ACTIVOS PAGE ─────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+function buildActivos() {
+  const lastIdx = MESES.length - 1;
+  const totalCore = ACTIVOS.reduce((s,a) => s + DATA[a.key][lastIdx], 0);
+  const grid = document.getElementById('assetGrid');
+
+  ACTIVOS.forEach(a => {
+    const val = DATA[a.key][lastIdx];
+    const prev = DATA[a.key][lastIdx - 1];
+    // Rentabilidad mes (simple, approx)
+    const pct = prev > 0 ? ((val - prev) / prev * 100) : 0;
+    const pctTotal = val / totalCore * 100;
+    const rentAcum = DATA[a.key].reduce((acc,v,i) => {
+      if (i === 0 || v === 0) return acc;
+      const ini = DATA[a.key].slice(0,i).find(x => x > 0) || 0;
+      return acc;
+    }, 0);
+
+    // Rentabilidad acumulada aprox (desde primer valor no cero)
+    const firstVal = DATA[a.key].find(v => v > 0) || 1;
+    const rentAcumPct = (val - firstVal) / firstVal * 100;
+
+    grid.innerHTML += `
+      <div class="asset-card" style="--accent:${a.color}">
+        <div class="ac-name">${a.nombre}</div>
+        <div class="ac-val" style="color:${a.color}">${fmtEur(val)}</div>
+        <div class="ac-rent ${pct>=0?'pos':'neg'}">${fmtPct(pct,2)} este mes</div>
+        <div style="font-size:9px;color:var(--muted);margin-bottom:8px">${pctTotal.toFixed(1)}% del total · Acum: <span style="color:${clr(rentAcumPct)}">${fmtPct(rentAcumPct,1)}</span></div>
+        <div class="ac-bar-wrap"><div class="ac-bar" style="width:${Math.min(100,pctTotal*2)}%"></div></div>
+      </div>
+    `;
+  });
+
+  // Mini-gráficos por activo
+  const chartsDiv = document.getElementById('assetCharts');
+  ACTIVOS.forEach(a => {
+    const datos = MESES.map((_,i) => DATA[a.key][i] || null);
+    const id = 'chart-'+a.key;
+    chartsDiv.innerHTML += `
+      <div class="chart-card">
+        <div class="chart-title" style="color:${a.color}">${a.nombre}</div>
+        <div class="chart-wrap"><canvas id="${id}" height="140"></canvas></div>
+      </div>
+    `;
+
+    setTimeout(() => {
+      new Chart(document.getElementById(id), {
+        type:'line',
+        data:{
+          labels:MESES,
+          datasets:[{
+            label:a.nombre,
+            data:datos,
+            borderColor:a.color,
+            backgroundColor:a.color+'18',
+            fill:true,tension:0.4,borderWidth:2,
+            pointRadius:4,pointBackgroundColor:a.color,
+          }]
+        },
+        options:{
+          responsive:true,
+          plugins:{
+            legend:{display:false},
+            tooltip:{
+              backgroundColor:'#0e1419',borderColor:'rgba(201,168,76,0.3)',borderWidth:1,
+              titleColor:a.color,bodyColor:'#e2ddd4',
+              callbacks:{label:ctx=>` ${fmtEur(ctx.parsed.y)}`}
+            }
+          },
+          scales:{
+            x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#7a7060',font:{family:'DM Mono',size:10}}},
+            y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#7a7060',font:{family:'DM Mono',size:10},callback:v=>fmtEur(v)}}
+          }
+        }
+      });
+    }, 50);
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+// ── PESOS PAGE ────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+function buildPesos() {
+  // Gráfico barras dobles
+  new Chart(document.getElementById('chartPesos'), {
+    type:'bar',
+    data:{
+      labels: PESOS.map(p=>p.nombre),
+      datasets:[
+        {
+          label:'Objetivo (%)',
+          data: PESOS.map(p=>p.obj),
+          backgroundColor:'rgba(201,168,76,0.3)',
+          borderColor:'rgba(201,168,76,0.8)',
+          borderWidth:1,borderRadius:2,
+        },
+        {
+          label:'Actual (%)',
+          data: PESOS.map(p=>p.act),
+          backgroundColor: PESOS.map(p => {
+            const dev = p.act - p.obj;
+            return Math.abs(dev) < 1 ? 'rgba(76,175,122,0.6)'
+                 : Math.abs(dev) < 3 ? 'rgba(201,168,76,0.6)'
+                 : 'rgba(201,80,80,0.6)';
+          }),
+          borderWidth:0,borderRadius:2,
+        }
+      ]
+    },
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{labels:{color:'#7a7060',font:{family:'DM Mono',size:10},boxWidth:14}},
+        tooltip:{
+          backgroundColor:'#0e1419',borderColor:'rgba(201,168,76,0.3)',borderWidth:1,
+          titleColor:'#c9a84c',bodyColor:'#e2ddd4',
+          callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(2)}%`}
+        }
+      },
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#7a7060',font:{family:'DM Mono',size:10}}},
+        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#7a7060',font:{family:'DM Mono',size:10},callback:v=>v+'%'}}
+      }
+    }
+  });
+
+  // Tabla
+  const body = document.getElementById('pesosBody');
+  PESOS.forEach(p => {
+    const dev = (p.act - p.obj);
+    const devAbs = Math.abs(dev);
+    const color = devAbs < 1 ? '#4caf7a' : devAbs < 3 ? '#c9a84c' : '#c95050';
+    const ajuste = (p.obj - p.act) / 100 * TOTAL_CARTERA;
+    const dir = dev < -1 ? '▲ Sobreponderar' : dev > 1 ? '▼ Infraponderar' : '✓ En rango';
+    const dirColor = dev < -1 ? '#4caf7a' : dev > 1 ? '#c95050' : '#4caf7a';
+
+    // Barra de desviación centrada
+    const barPct = Math.min(50, Math.abs(dev) * 5);
+    const barLeft = dev < 0 ? `left:${50-barPct}%;width:${barPct}%` : `left:50%;width:${barPct}%`;
+    const barColor = dev < 0 ? '#4caf7a' : '#c95050';
+
+    body.innerHTML += `
+      <tr>
+        <td>${p.nombre}</td>
+        <td style="color:var(--muted2)">${p.obj.toFixed(2)}%</td>
+        <td style="color:${color};font-weight:500">${p.act.toFixed(2)}%</td>
+        <td>
+          <div class="dev-bar-wrap">
+            <span style="color:${color};min-width:52px;text-align:right">${dev>0?'+':''}${dev.toFixed(2)}%</span>
+            <div class="dev-bar-track">
+              <div class="dev-bar-center"></div>
+              <div class="dev-bar-fill" style="${barLeft};background:${barColor};opacity:0.7"></div>
+            </div>
+          </div>
+        </td>
+        <td style="color:${dirColor};font-size:11px">${dir}</td>
+        <td style="color:var(--text)">${fmtEur(p.val)}</td>
+        <td style="color:${ajuste>0?'#4caf7a':'#c95050'}">${ajuste>0?'+':''}${fmtEur(ajuste)}</td>
+      </tr>
+    `;
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+// ── BENCHMARK PAGE ────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+function buildBenchmark() {
+  // Alpha acumulado
+  const alphaData = BENCH_DATA.filter(b=>b.ok).map(b=>b.aa);
+  const alphaLabels = BENCH_DATA.filter(b=>b.ok).map(b=>b.mes);
+
+  new Chart(document.getElementById('chartAlpha'), {
+    type:'line',
+    data:{
+      labels:alphaLabels,
+      datasets:[
+        {
+          label:'Alpha acumulado',
+          data:alphaData,
+          borderColor: alphaData[alphaData.length-1] >= 0 ? '#4caf7a' : '#c95050',
+          backgroundColor: alphaData[alphaData.length-1] >= 0 ? 'rgba(76,175,122,0.08)' : 'rgba(201,80,80,0.08)',
+          fill:true,tension:0.4,borderWidth:2,
+          pointRadius:5,
+          pointBackgroundColor: alphaData.map(v => v>=0?'#4caf7a':'#c95050'),
+        },
+        {
+          label:'Línea cero (benchmark = cartera)',
+          data:alphaLabels.map(()=>0),
+          borderColor:'rgba(122,112,96,0.4)',
+          borderDash:[4,4],borderWidth:1,
+          pointRadius:0,fill:false,
+        }
+      ]
+    },
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{labels:{color:'#7a7060',font:{family:'DM Mono',size:10},boxWidth:14}},
+        tooltip:{
+          backgroundColor:'#0e1419',borderColor:'rgba(201,168,76,0.3)',borderWidth:1,
+          titleColor:'#c9a84c',bodyColor:'#e2ddd4',
+          callbacks:{label:ctx=>` ${ctx.dataset.label}: ${fmtPct(ctx.parsed.y)}`}
+        }
+      },
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#7a7060',font:{family:'DM Mono',size:10}}},
+        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#7a7060',font:{family:'DM Mono',size:10},callback:v=>fmtPct(v,2)}}
+      }
+    }
+  });
+
+  // Tabla
+  const body = document.getElementById('benchBody');
+  BENCH_DATA.forEach(b => {
+    if (!b.ok) {
+      body.innerHTML += `<tr class="pending"><td>${b.mes}</td><td colspan="6" style="text-align:center;color:var(--muted)">Pendiente de cierre <span class="badge badge-pend">PENDIENTE</span></td></tr>`;
+      return;
+    }
+    const amC = clr(b.am);
+    const aaC = clr(b.aa);
+    body.innerHTML += `
+      <tr>
+        <td>${b.mes}</td>
+        <td style="color:${clr(b.rc)}">${fmtPct(b.rc)}</td>
+        <td style="color:${clr(b.rs)}">${fmtPct(b.rs)}</td>
+        <td style="color:${amC}">${fmtPct(b.am)} <span class="badge ${b.am>=0?'badge-pos':'badge-neg'}">${b.am>=0?'AHEAD':'BEHIND'}</span></td>
+        <td style="color:${clr(b.rac)}">${fmtPct(b.rac)}</td>
+        <td style="color:${clr(b.ras)}">${fmtPct(b.ras)}</td>
+        <td style="color:${aaC};font-weight:500">${fmtPct(b.aa)}</td>
+      </tr>
+    `;
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+// ── CIERRE MES ────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+function calcularCierre() {
+  const lastIdx = MESES.length - 1;
+
+  // Valores iniciales del mes que se cierra (= valores finales del mes anterior)
+  const inis = {
+    sp500: DATA.sp500[lastIdx],
+    euro:  DATA.euro[lastIdx],
+    em:    DATA.em[lastIdx],
+    oro:   DATA.oro[lastIdx],
+    btc:   DATA.btc[lastIdx],
+    num:   DATA.numantia[lastIdx],
+    hor:   DATA.horos[lastIdx],
+  };
+
+  // Aportaciones del mes (las conocidas para junio)
+  const aports = { sp500:332, euro:66, em:88, oro:40, btc:16, num:0, hor:0 };
+  const aportTotal = Object.values(aports).reduce((a,b)=>a+b,0);
+
+  // Valores finales introducidos
+  const fins = {
+    sp500: parseFloat(document.getElementById('in-sp500').value) || 0,
+    euro:  parseFloat(document.getElementById('in-euro').value) || 0,
+    em:    parseFloat(document.getElementById('in-em').value) || 0,
+    oro:   parseFloat(document.getElementById('in-oro').value) || 0,
+    btc:   parseFloat(document.getElementById('in-btc').value) || 0,
+    num:   parseFloat(document.getElementById('in-num').value) || 0,
+    hor:   parseFloat(document.getElementById('in-hor').value) || 0,
+  };
+
+  const bench = parseFloat(document.getElementById('in-bench').value) || null;
+  const mes   = document.getElementById('in-mes').value;
+
+  if (!fins.sp500 && !fins.em) {
+    alert('Introduce al menos los valores finales del S&P 500 y Emergentes.');
+    return;
+  }
+
+  const valIni  = Object.values(inis).reduce((a,b)=>a+b,0);
+  const valFin  = Object.values(fins).reduce((a,b)=>a+b,0);
+  const benefNeto = valFin - valIni - aportTotal;
+
+  // Modified Dietz: R = (VF - VI - A) / (VI + A*0.5)
+  // Asumimos aportaciones a mitad de mes (factor 0.5)
+  const denomMD = valIni + aportTotal * 0.5;
+  const rentMD  = denomMD > 0 ? (benefNeto / denomMD * 100) : 0;
+
+  const prevAcum = RENT_ACUM_CARTERA[lastIdx];
+  const rentAcum = (1 + prevAcum/100) * (1 + rentMD/100) * 100 - 100;
+
+  const benchRent = bench;
+  const alpha = benchRent !== null ? (rentMD - benchRent) : null;
+
+  const rBox = document.getElementById('resultBox');
+  rBox.className = 'result-box visible';
+  rBox.innerHTML = `
+    <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:14px">Resultados · ${mes}</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;">
+      ${[
+        ['Valor inicial', fmtEur(valIni), 'var(--muted2)'],
+        ['Valor final', fmtEur(valFin), 'var(--gold2)'],
+        ['Aportaciones', fmtEur(aportTotal), 'var(--blue)'],
+        ['Beneficio neto', fmtEur(benefNeto), benefNeto>=0?'var(--green)':'var(--red)'],
+        ['Rentabilidad (M. Dietz)', fmtPct(rentMD), rentMD>=0?'var(--green)':'var(--red)'],
+        ['Rent. acumulada', fmtPct(rentAcum), rentAcum>=0?'var(--green)':'var(--red)'],
+        ...(alpha!==null ? [['Alpha vs S&P 500', fmtPct(alpha), alpha>=0?'var(--green)':'var(--red)']] : []),
+      ].map(([lab,val,col]) => `
+        <div style="background:var(--bg4);padding:12px 14px;border-radius:2px;">
+          <div style="font-size:8px;letter-spacing:2px;color:var(--muted);margin-bottom:6px">${lab}</div>
+          <div style="font-size:1.1rem;font-family:'Cormorant Garamond',serif;color:${col}">${val}</div>
+        </div>
+      `).join('')}
+    </div>
+    <div style="margin-top:16px;font-size:10px;color:var(--muted2);line-height:1.8">
+      <strong style="color:var(--gold)">Para actualizar la app:</strong> copia estos valores en tu Google Sheet y 
+      actualiza el bloque <code style="color:var(--gold2)">DATA</code> en el código fuente de este HTML 
+      añadiendo una nueva entrada en cada array con los valores finales de ${mes}.
+    </div>
+  `;
+}
+
+// ══════════════════════════════════════════════════════════
+// ── INIT ─────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  buildChartTotal();
+  buildChartRent();
+  buildChartAcum();
+  buildDonut();
+  buildStack();
+  buildActivos();
+  buildPesos();
+  buildBenchmark();
+});
+</script>
+</body>
+</html>
