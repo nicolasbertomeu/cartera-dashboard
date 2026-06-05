@@ -287,8 +287,8 @@ footer{
   </div>
   <div class="h-right">
     <div class="period">ÚLTIMO MES CERRADO</div>
-    <div class="total-val" id="hdr-total">17.939 €</div>
-    <div class="total-label">CARTERA CORE · MAY-2026</div>
+    <div class="total-val" id="hdr-total">—</div>
+    <div class="total-label" id="hdr-label">CARTERA CORE · —</div>
   </div>
 </header>
  
@@ -311,33 +311,33 @@ footer{
   <div class="kpi-strip">
     <div class="kpi">
       <div class="kpi-label">Valor total</div>
-      <div class="kpi-val neu">17.939 €</div>
-      <div class="kpi-sub">Mayo 2026</div>
+      <div class="kpi-val neu" id="kpi-total">—</div>
+      <div class="kpi-sub" id="kpi-sub-mes">—</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">Rent. acumulada</div>
-      <div class="kpi-val pos">+6,47%</div>
-      <div class="kpi-sub">Feb → May · Modified Dietz</div>
+      <div class="kpi-val" id="kpi-rent-acum">—</div>
+      <div class="kpi-sub" id="kpi-sub-acum">Feb → May · Modified Dietz</div>
     </div>
     <div class="kpi">
-      <div class="kpi-label">Rent. mayo</div>
-      <div class="kpi-val pos">+3,87%</div>
-      <div class="kpi-sub">Mejor mes del período</div>
+      <div class="kpi-label" id="kpi-label-mes">Rent. mes</div>
+      <div class="kpi-val" id="kpi-rent-mes">—</div>
+      <div class="kpi-sub">Último mes cerrado</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">Beneficio neto</div>
-      <div class="kpi-val pos">+1.134 €</div>
+      <div class="kpi-val" id="kpi-benef">—</div>
       <div class="kpi-sub">Desde feb 2026</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">Alpha acum. vs S&P</div>
-      <div class="kpi-val neg">−1,99%</div>
-      <div class="kpi-sub">Índice: +8,46% acum.</div>
+      <div class="kpi-val" id="kpi-alpha">—</div>
+      <div class="kpi-sub" id="kpi-sub-sp">—</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">Aportaciones totales</div>
-      <div class="kpi-val blue">+6.564 €</div>
-      <div class="kpi-sub">Feb → May</div>
+      <div class="kpi-val blue" id="kpi-aport">—</div>
+      <div class="kpi-sub" id="kpi-sub-aport">Desde feb 2026</div>
     </div>
   </div>
  
@@ -1190,6 +1190,61 @@ function calcularCierre() {
 // ── INIT ─────────────────────────────────────────────────
 // ══════════════════════════════════════════════════════════
 window.addEventListener('DOMContentLoaded', () => {
+ 
+  // ── KPIs DINÁMICOS ────────────────────────────────────────
+  const lastIdx     = MESES.length - 1;
+  const mesFull     = MESES_FULL[lastIdx];
+  const mesCorto    = MESES[lastIdx];
+ 
+  const totalUlt    = DATA.sp500[lastIdx] + DATA.euro[lastIdx] + DATA.em[lastIdx] +
+                      DATA.oro[lastIdx]   + DATA.btc[lastIdx]  + DATA.numantia[lastIdx] +
+                      DATA.horos[lastIdx];
+ 
+  const rentMesUlt  = RENT_CARTERA[lastIdx];
+  const rentAcumUlt = RENT_ACUM_CARTERA[lastIdx];
+  const spAcumUlt   = RENT_ACUM_SP500[lastIdx];
+  const benchOk     = BENCH_DATA.filter(b => b.ok);
+  const alphaUlt    = benchOk.length > 0 ? benchOk[benchOk.length - 1].aa : null;
+  const aportAcum   = APORTACIONES.reduce((a, b) => a + b, 0);
+  const benefNeto   = totalUlt - 11239.21 - aportAcum;
+ 
+  // Colores dinámicos
+  const clrVal = v => v >= 0.05 ? 'pos' : v < -0.05 ? 'neg' : 'neu';
+ 
+  // Header
+  document.getElementById('hdr-total').textContent  = fmtEur(totalUlt);
+  document.getElementById('hdr-label').textContent  = `CARTERA CORE · ${mesFull.toUpperCase()}`;
+ 
+  // KPI strip
+  const kpiTotal = document.getElementById('kpi-total');
+  kpiTotal.textContent = fmtEur(totalUlt);
+ 
+  document.getElementById('kpi-sub-mes').textContent  = mesFull;
+ 
+  const kpiRentAcum = document.getElementById('kpi-rent-acum');
+  kpiRentAcum.textContent = fmtPct(rentAcumUlt);
+  kpiRentAcum.className   = `kpi-val ${clrVal(rentAcumUlt)}`;
+ 
+  document.getElementById('kpi-label-mes').textContent = `Rent. ${mesCorto}`;
+  const kpiRentMes = document.getElementById('kpi-rent-mes');
+  kpiRentMes.textContent = fmtPct(rentMesUlt);
+  kpiRentMes.className   = `kpi-val ${clrVal(rentMesUlt)}`;
+ 
+  const kpiBenef = document.getElementById('kpi-benef');
+  kpiBenef.textContent = (benefNeto >= 0 ? '+' : '') + fmtEur(benefNeto);
+  kpiBenef.className   = `kpi-val ${clrVal(benefNeto)}`;
+ 
+  if (alphaUlt !== null) {
+    const kpiAlpha = document.getElementById('kpi-alpha');
+    kpiAlpha.textContent = fmtPct(alphaUlt);
+    kpiAlpha.className   = `kpi-val ${clrVal(alphaUlt)}`;
+    document.getElementById('kpi-sub-sp').textContent = `Índice: ${fmtPct(spAcumUlt)} acum.`;
+  }
+ 
+  document.getElementById('kpi-aport').textContent     = '+' + fmtEur(aportAcum);
+  document.getElementById('kpi-sub-aport').textContent = `Feb 2026 → ${mesFull}`;
+ 
+  // ── GRÁFICOS ──────────────────────────────────────────────
   buildChartTotal();
   buildChartRent();
   buildChartAcum();
@@ -1202,4 +1257,3 @@ window.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
- 
