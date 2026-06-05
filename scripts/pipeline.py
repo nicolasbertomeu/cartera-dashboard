@@ -358,7 +358,13 @@ def actualizar_html(datos):
 # Construir bloque de datos
     bench_json = js_bench(datos.get('benchmark', []))
     pesos_json = js_pesos(datos.get('pesos_con_crowdfunding', {}))
-    data_str = chr(10).join(f"  {a['key']}: {js_array(datos.get(f'data_{a[\"key\"]}', []))}, " for a in ACTIVOS).rstrip(", ")
+    
+    data_parts = []
+    for a in ACTIVOS:
+        key = a['key']
+        arr = js_array(datos.get(f'data_{key}', []))
+        data_parts.append(f"  {key}: {arr},")
+    data_str = "\n".join(data_parts).rstrip(",")
     
     nuevo_bloque = f"""// AUTO-GENERADO por pipeline.py
 const MESES = {js_array(datos['meses'])};
