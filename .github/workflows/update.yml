@@ -1,0 +1,59 @@
+name: Actualizar Cartera
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Instalar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: pip install gspread google-auth google-api-python-client
+
+      - name: Comprobar si es el primer lunes del mes
+        id: check
+        run: |
+          python - <<'EOF'
+          from datetime import date
+          import os
+          hoy = date.today()
+          es_primero = hoy.weekday() == 0 and 1 <= hoy.day <= 7
+          manual = "${{ github.event_name }}" == "workflow_dispatch"
+          proceder = es_primero or manual
+          print(f"Hoy: {hoy} | Primer lunes: {es_primero} | Manual: {manual}")
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"proceder={'true' if proceder else 'false'}\n")
+          EOF
+
+      - name: Ejecutar pipeline
+        if: steps.check.outputs.proceder == 'true'
+        env:
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+          EMAIL_ORIGEN:       ${{ secrets.EMAIL_ORIGEN }}
+          EMAIL_DEST:         ${{ secrets.EMAIL_DEST }}
+          APP_PASSWORD:       ${{ secrets.APP_PASSWORD }}
+        run: python scripts/pipeline.py
+
+      - name: Publicar dashboard en GitHub Pages
+        if: steps.check.outputs.proceder == 'true'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/index.html
+          git diff --staged --quiet || git commit -m "Dashboard actualizado - $(date +'%B %Y')"
+          git push
+
+      - name: Informar si no era el primer lunes
+        if: steps.check.outputs.proceder == 'false'
+        run: echo "No es el primer lunes del mes - nada que hacer."
