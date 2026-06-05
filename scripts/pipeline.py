@@ -356,15 +356,17 @@ def actualizar_html(datos):
         html = f.read()
     
     # Construir bloque de datos
+    bench_data = datos.get('benchmark', [])
+    pesos_data = datos.get('pesos_con_crowdfunding', {})
+    
     nuevo_bloque = f"""// AUTO-GENERADO por pipeline.py
 const MESES = {js_array(datos['meses'])};
 const DATA = {{
-{chr(10).join(f"  {a['key']}: {js_array(datos[f'data_{a[\"key\"]}'])}, " for a in ACTIVOS).rstrip(", ")}
+{chr(10).join(f"  {a['key']}: {js_array(datos.get(f'data_{a[\"key\"]}', []))}, " for a in ACTIVOS).rstrip(", ")}
 }};
-const PESOS = {js_pesos(datos['pesos_con_crowdfunding'])};
-const RENT_ACUM_SP = {js_array(datos['rent_acum_sp'])};
-const BENCH_DATA = {js_bench(datos['benchmark'])};"""
-
+const PESOS = {js_pesos(pesos_data)};
+const RENT_ACUM_SP = {js_array(datos.get('rent_acum_sp', []))};
+const BENCH_DATA = {js_bench(bench_data)};"""
     patron = re.compile(
         r"// AUTO-GENERADO.*?(?=const ACT\s*=)",
         re.DOTALL
